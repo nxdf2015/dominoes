@@ -35,6 +35,8 @@ def update_game(game,player,value):
     game.update({ player : remove_piece(game.get(player), max_double)})
     return game
 
+
+
 def show(game,player):
     return f"""Stock pieces: {game["stock"]}
 Computer pieces: {game["computer"]}
@@ -49,22 +51,35 @@ def render_piece(pieces):
 def render_snake(pieces):
     return pieces[0]
 
-def render(game,status):
-    status_msg = "It's your turn to make a move. Enter your command." if status == "player" else "Computer is about to make a move. Press Enter to continue..."
 
+def render_message_status(status):
+    return "It's your turn to make a move. Enter your command." if status == "player" else "Computer is about to make a move. Press Enter to continue..."
+
+
+
+def render_game(game,status):
+    data = { "stock_size" : len(game["stock"]),
+      "computer_size" : len(game["computer"]),
+      "snake" : render_snake(game["snake"]),
+      "player" : render_piece(game["player"]),
+      "status" : render_message_status(status)}
+    return render(**data)
+
+def render(** data):
 
     result = "=" * 70
     result += f"""
 
-Stock size: {len(game["stock"])}
-Computer pieces: {len(game["computer"])}
+Stock size: {data["stock_size"]}
+Computer pieces: {data["computer_size"]}
 
-{render_snake(game["snake"])}
+{ data["snake"]}
 Your pieces:
-{render_piece(game["player"])}
-Status: {status_msg}"""
+{data["player"]}
+Status: {data["status"]}"""
 
     return result
+
 
 def find_max(game):
     while True:
@@ -96,5 +111,5 @@ game = update_game(game, current_player, max_double)
 
 current_player = "computer" if current_player == "player" else "player"
 
-print(render(game,current_player))
-
+#print(render(game,current_player))
+print(render_game(game, current_player))
