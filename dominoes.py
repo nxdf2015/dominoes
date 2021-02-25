@@ -41,8 +41,30 @@ Computer pieces: {game["computer"]}
 Player pieces: {game["player"]}
 Domino snake: {game["snake"]}
 Status: {player}
-
     """
+
+def render_piece(pieces):
+    return "\n".join([ f"{i}: {p}" for i,p in enumerate(pieces,start=1)])
+
+def render_snake(pieces):
+    return pieces[0]
+
+def render(game,status):
+    status_msg = "It's your turn to make a move. Enter your command." if status == "player" else "Computer is about to make a move. Press Enter to continue..."
+
+
+    result = "=" * 70
+    result += f"""
+
+Stock size: {len(game["stock"])}
+Computer pieces: {len(game["computer"])}
+
+{render_snake(game["snake"])}
+Your pieces:
+{render_piece(game["player"])}
+Status: {status_msg}"""
+
+    return result
 
 def find_max(game):
     while True:
@@ -74,5 +96,5 @@ game = update_game(game, current_player, max_double)
 
 current_player = "computer" if current_player == "player" else "player"
 
-print(show(game,current_player))
+print(render(game,current_player))
 
