@@ -45,7 +45,7 @@ Status: {player}
 
 
 def render_piece(pieces):
-    return "\n".join([f"{i}: {p}" for i, p in enumerate(pieces, start=1)])
+    return "\n".join([f"{i}:{p}" for i, p in enumerate(pieces, start=1)])
 
 
 def render_snake(pieces):
@@ -79,12 +79,14 @@ def render_game(game, status, draw, win):
 
 def render(**data):
     result = "=" * 70
+
     result += f"""
 
 Stock size: {data["stock_size"]}
 Computer pieces: {data["computer_size"]}
 
 {data["snake"]}
+
 Your pieces:
 {data["player"]}
 
@@ -111,12 +113,30 @@ def find_max(game):
 
 
 def is_valid_id(game, player, id_text):
-    return id_text.isdigit() and 0 <= int(id_text) <= len(game[player])
+    return  0 <= abs(id_text) <= len(game[player])
 
 
 def get_random_id(game):
     size = len(game["computer"])
     return random.randint(-size, size)
+
+def is_valid_move(piece,snake,left=True):
+
+    if left:
+         snake_item = snake[0][0]
+    else:
+        snake_item = snake[-1][1]
+
+    return snake_item in piece
+
+
+def move_piece(piece,snake,left=True):
+    if (left and not piece[1] == snake[0][0]) or (not (left  or   piece[0] == snake[-1][1])):
+        return piece[::-1]
+    else:
+        return piece
+
+
 
 
 def select_piece(game, player):
@@ -124,23 +144,44 @@ def select_piece(game, player):
         while True:
             try:
                 # ask user choice
+
                 id = int(input())  # id valid: number and less than number piece
-                if -len(game["player"]) <= id <= len(game["player"]):
-                    return id
-                else:
+
+                #select a piece
+                #verify if piece is valid
+
+                if id == 0:
+                    return 0
+                elif not is_valid_id(game,player,id ):
                     print("Invalid input. Please try again.")
+
+                elif not is_valid_move(game[player][abs(id) - 1],game["snake"],id < 0):
+                    print("Illegal move. Please try again.")
+
+                else:
+                    return id
+
             except ValueError as e:
                 print("Invalid input. Please try again.")
     else:  # else select random piece in computer_piece
         input()
-        return get_random_id(game)
+        for i, piece in enumerate(game[player]):
+            if is_valid_move(piece, game["snake"], False):
+                return i + 1
+            elif is_valid_move(piece, game["snake"], True):
+                return -(i + 1)
+
+
+        return 0
+
 
 
 def game_draw(pieces):
-    first = pieces[0]
-    last = pieces[-1]
+    first = pieces[0][0]
+    last = pieces[-1][1]
+
     if first == last:
-        count = sum([1 for p in pieces if first in p])
+        count = sum([piece.count(first) for piece in pieces])
         return count == 8
     else:
         return False
@@ -162,15 +203,21 @@ print(render_game(game, current_player, draw, win))
 
 while not (win or draw):  # loop game
     # select a piece
+
     id_domino_selected = select_piece(game, current_player)
 
+
     if id_domino_selected == 0 and len(game["stock"]) > 0:
-        # remove piece from stock if id_domino == 0
-        piece = game["stock"].pop()
-        game[current_player].append(piece)
+
+        #remove piece from stock if id_domino == 0
+
+            piece = game["stock"].pop()
+            game[current_player].append(piece)
+
     else:
         # remove piece from game[player] and add piece to the snake
         piece = game[current_player].pop(abs(id_domino_selected) - 1)
+        piece = move_piece(piece,game["snake"], id_domino_selected < 0)
         if id_domino_selected < 0:
             game["snake"].insert(0, piece)
         else:
@@ -181,4 +228,5 @@ while not (win or draw):  # loop game
 
     if not win:
         current_player = "computer" if current_player == "player" else "player"
+
     print(render_game(game, current_player, draw, win))
