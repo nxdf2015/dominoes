@@ -1,4 +1,5 @@
 import random
+from operator import itemgetter
 
 dominos = [[i, j] for i in range(0, 7) for j in range(i, 7)]
 
@@ -137,6 +138,21 @@ def move_piece(piece,snake,left=True):
         return piece
 
 
+def get_computer_piece(game):
+    pieces = game["computer"]
+    snake = game["snake"]
+    count_value = [str(pieces).count(str(value)) for value in range(7)]
+    scores = [[ piece , i, count_value[piece[0]] + count_value[piece[1]]]for i,piece in enumerate(pieces)]
+    scores.sort(key=itemgetter(2))
+    while len(scores) > 0:
+        max_score = scores.pop()
+        if is_valid_move(max_score[0],snake,True):
+            return -max_score[1]
+        elif is_valid_move(max_score[0],snake,False):
+            return max_score[1]
+    return 0
+
+
 
 
 def select_piece(game, player):
@@ -165,14 +181,8 @@ def select_piece(game, player):
                 print("Invalid input. Please try again.")
     else:  # else select random piece in computer_piece
         input()
-        for i, piece in enumerate(game[player]):
-            if is_valid_move(piece, game["snake"], False):
-                return i + 1
-            elif is_valid_move(piece, game["snake"], True):
-                return -(i + 1)
+        return get_computer_piece(game)
 
-
-        return 0
 
 
 
